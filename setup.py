@@ -15,7 +15,6 @@ setup(
     description='Generic Ratings in Django',
     url='http://github.com/dcramer/django-ratings',
     install_requires=[
-        'django',
     ],
     tests_require=tests_require,
     extras_require={'test': tests_require},
