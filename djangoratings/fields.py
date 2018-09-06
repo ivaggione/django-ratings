@@ -87,7 +87,7 @@ class RatingManager(object):
             return 0
         return float(self.score)/self.votes
     
-    def get_rating_for_user(self, user, ip_address=None, cookies={}):
+    def get_rating_for_user(self, user, hashed_ip_address=None, cookies={}):
         """get_rating_for_user(user, ip_address=None, cookie=None)
         
         Returns the rating for a user or anonymous IP."""
@@ -98,10 +98,10 @@ class RatingManager(object):
         )
 
         if not (user and user.is_authenticated()):
-            if not ip_address:
-                raise ValueError('``user`` or ``ip_address`` must be present.')
+            if not hashed_ip_address:
+                raise ValueError('``user`` or ``hashed_ip_address`` must be present.')
             kwargs['user__isnull'] = True
-            kwargs['ip_address'] = ip_address
+            kwargs['hashed_ip_address'] = hashed_ip_address
         else:
             kwargs['user'] = user
         
@@ -126,7 +126,10 @@ class RatingManager(object):
     
     def get_iterable_range(self):
         return range(1, self.field.range) #started from 1, because 0 is equal to delete
-        
+
+    def hash_ip_address(self, ip_address):
+        return md5_hexdigest(ip_address)
+
     def add(self, score, user, ip_address, cookies={}, commit=True):
         """add(score, user, ip_address)
         
@@ -150,10 +153,12 @@ class RatingManager(object):
         
         if is_anonymous:
             user = None
+
+        hashed_ip_address = self.hash_ip_address(ip_address)
         
         defaults = dict(
             score = score,
-            ip_address = ip_address,
+            hashed_ip_address = hashed_ip_address,
         )
         
         kwargs = dict(
@@ -163,7 +168,7 @@ class RatingManager(object):
             user            = user,
         )
         if not user:
-            kwargs['ip_address'] = ip_address
+            kwargs['hashed_ip_address'] = hashed_ip_address
         
         use_cookies = (self.field.allow_anonymous and self.field.use_cookies)
         if use_cookies:
@@ -185,7 +190,7 @@ class RatingManager(object):
                     content_type=kwargs['content_type'],
                     object_id=kwargs['object_id'],
                     key=kwargs['key'],
-                    ip_address=ip_address,
+                    hashed_ip_address=hashed_ip_address,
                 ).count()
                 if num_votes >= getattr(settings, 'RATINGS_VOTES_PER_IP', RATINGS_VOTES_PER_IP):
                     raise IPLimitReached()
@@ -250,8 +255,8 @@ class RatingManager(object):
             adds['deleted'] = True
         return adds
 
-    def delete(self, user, ip_address, cookies={}, commit=True):
-        return self.add(0, user, ip_address, cookies, commit)
+    def delete(self, user, hashed_ip_address, cookies={}, commit=True):
+        return self.add(0, user, hashed_ip_address, cookies, commit)
     
     def _get_votes(self, default=None):
         return getattr(self.instance, self.votes_field_name, default)

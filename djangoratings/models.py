@@ -19,8 +19,8 @@ class Vote(models.Model):
     key = models.CharField(max_length=32)
     score = models.IntegerField()
     user = models.ForeignKey(User, blank=True, null=True, related_name="votes")
-    ip_address = models.GenericIPAddressField()
-    ip_address = models.GenericIPAddressField() if hasattr(models, "GenericIPAddressField") else models.IPAddressField() 
+    ip_address = models.GenericIPAddressField(null=True) if hasattr(models, "GenericIPAddressField") else models.IPAddressField(null=True)
+    hashed_ip_address = models.CharField(null=True)
     cookie = models.CharField(max_length=32, blank=True, null=True)
     date_added = models.DateTimeField(default=now, editable=False)
     date_changed = models.DateTimeField(default=now, editable=False)
@@ -28,7 +28,7 @@ class Vote(models.Model):
     content_object = fields.GenericForeignKey()
 
     class Meta:
-        unique_together = (('content_type', 'object_id', 'key', 'user', 'ip_address', 'cookie'))
+        unique_together = (('content_type', 'object_id', 'key', 'user', 'hashed_ip_address', 'cookie'))
 
     def __unicode__(self):
         return u"%s voted %s on %s" % (self.user_display, self.score, self.content_object)
@@ -39,15 +39,10 @@ class Vote(models.Model):
 
     def user_display(self):
         if self.user:
-            return "%s (%s)" % (self.user.username, self.ip_address)
-        return self.ip_address
+            return "%s (%s)" % (self.user.username, self.hashed_ip_address)
+        return self.hashed_ip_address
     user_display = property(user_display)
 
-    def partial_ip_address(self):
-        ip = self.ip_address.split('.')
-        ip[-1] = 'xxx'
-        return '.'.join(ip)
-    partial_ip_address = property(partial_ip_address)
 
 class Score(models.Model):
     content_type = models.ForeignKey(ContentType)
