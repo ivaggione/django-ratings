@@ -20,7 +20,7 @@ class Vote(models.Model):
     score = models.IntegerField()
     user = models.ForeignKey(User, blank=True, null=True, related_name="votes")
     ip_address = models.GenericIPAddressField(null=True) if hasattr(models, "GenericIPAddressField") else models.IPAddressField(null=True)
-    hashed_ip_address = models.CharField(null=True)
+    hashed_ip_address = models.CharField(null=True, max_length=32)
     cookie = models.CharField(max_length=32, blank=True, null=True)
     date_added = models.DateTimeField(default=now, editable=False)
     date_changed = models.DateTimeField(default=now, editable=False)
