@@ -18,11 +18,7 @@ def hash_ip(apps, schema_editor):
 
 def blank_ip(apps, schema_editor):
     Vote = apps.get_model('djangoratings.Vote')
-    for item in Vote.objects.all().iterator():
-        if not item.ip_address:
-            continue
-        item.ip_address = None
-        item.save(update_fields=['ip_address'])
+    Vote.objects.update(ip_address=None)
 
 
 class Migration(migrations.Migration):

@@ -39,7 +39,7 @@ class Vote(models.Model):
 
     def user_display(self):
         if self.user:
-            return "%s (%s)" % (self.user.username, self.hashed_ip_address)
+            return "%s (%s)" % (self.user.username, self.hashed_ip_address[:5])
         return self.hashed_ip_address
     user_display = property(user_display)
 

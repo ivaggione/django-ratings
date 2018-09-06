@@ -255,8 +255,8 @@ class RatingManager(object):
             adds['deleted'] = True
         return adds
 
-    def delete(self, user, hashed_ip_address, cookies={}, commit=True):
-        return self.add(0, user, hashed_ip_address, cookies, commit)
+    def delete(self, user, ip_address, cookies={}, commit=True):
+        return self.add(0, user, ip_address, cookies, commit)
     
     def _get_votes(self, default=None):
         return getattr(self.instance, self.votes_field_name, default)
