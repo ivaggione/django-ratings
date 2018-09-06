@@ -25,8 +25,4 @@ class Migration(migrations.Migration):
             name='ip_address',
             field=models.GenericIPAddressField(null=True),
         ),
-        migrations.AlterUniqueTogether(
-            name='vote',
-            unique_together=set([('content_type', 'object_id', 'key', 'user', 'hashed_ip_address', 'cookie')]),
-        ),
     ]
