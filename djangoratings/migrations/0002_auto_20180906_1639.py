@@ -4,6 +4,24 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.db import migrations, models
+from djangoratings.models import Vote
+
+
+def hash_ip():
+    from djangoratings.fields import md5_hexdigest
+    for item in Vote.objects.all().iterator():
+        if not item.ip_address:
+            continue
+        item.hashed_ip_address = md5_hexdigest(item.ip_address)
+        item.save(update_fields=['hashed_ip_address'])
+
+
+def blank_ip():
+    for item in Vote.objects.all().iterator():
+        if not item.ip_address:
+            continue
+        item.ip_address = None
+        item.save(update_fields=['ip_address'])
 
 
 class Migration(migrations.Migration):
@@ -20,9 +38,15 @@ class Migration(migrations.Migration):
             name='hashed_ip_address',
             field=models.CharField(max_length=32, null=True),
         ),
+        migrations.RunPython(hash_ip),
+        migrations.AlterUniqueTogether(
+            name='vote',
+            unique_together=set([('content_type', 'object_id', 'key', 'user', 'hashed_ip_address', 'cookie')]),
+        ),
         migrations.AlterField(
             model_name='vote',
             name='ip_address',
             field=models.GenericIPAddressField(null=True),
         ),
+        migrations.RunPython(blank_ip),
     ]
