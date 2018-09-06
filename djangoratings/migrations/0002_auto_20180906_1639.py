@@ -4,11 +4,11 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.db import migrations, models
-from djangoratings.models import Vote
 
 
-def hash_ip():
+def hash_ip(apps, schema_editor):
     from djangoratings.fields import md5_hexdigest
+    Vote = apps.get_model('djangoratings.Vote')
     for item in Vote.objects.all().iterator():
         if not item.ip_address:
             continue
@@ -16,7 +16,8 @@ def hash_ip():
         item.save(update_fields=['hashed_ip_address'])
 
 
-def blank_ip():
+def blank_ip(apps, schema_editor):
+    Vote = apps.get_model('djangoratings.Vote')
     for item in Vote.objects.all().iterator():
         if not item.ip_address:
             continue
